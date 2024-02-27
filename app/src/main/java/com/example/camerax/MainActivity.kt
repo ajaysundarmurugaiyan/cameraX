@@ -4,6 +4,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Environment
 import android.util.Log
 import android.widget.Toast
 import androidx.camera.core.CameraSelector
@@ -46,10 +47,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getOutputDirectory():File{
-        val mediaDir = externalMediaDirs.firstOrNull()?.let {mFile ->
-            File(mFile,resources.getString(R.string.app_name)).apply {
-                mkdirs()
-            }
+        val mediaDir = File(Environment.getExternalStoragePublicDirectory(
+            Environment.DIRECTORY_DCIM),resources.getString(R.string.app_name)).apply {
+            mkdirs()
         }
         return if (mediaDir !=null && mediaDir.exists())
             mediaDir else filesDir
@@ -97,12 +97,15 @@ class MainActivity : AppCompatActivity() {
             imageCapture =ImageCapture.Builder()
                 .build()
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+
             try {
                 cameraProvider.unbindAll()
+                val camera =
                 cameraProvider.bindToLifecycle(
                     this,cameraSelector,
                     preview,imageCapture
                 )
+                camera.cameraControl.enableTorch(true)
             }catch (e:Exception){
                 Log.d(Constants.TAG,"start camera fail",e)
             }
